@@ -28,6 +28,7 @@ namespace examples {
 namespace HelloWorld_ {
 
 // Interface-specific deployment types
+typedef CommonAPI::SomeIP::EnumerationDeployment<uint8_t> RoutineControlTypeDeployment_t;
 
 // Type-specific deployments
 

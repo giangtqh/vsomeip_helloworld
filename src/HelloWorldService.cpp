@@ -28,10 +28,11 @@ int main() {
     }
 
     std::cout << "Successfully Registered Service!" << std::endl;
-
+    int count{0};
     while (true) {
-        std::cout << "Waiting for calls... (Abort with CTRL+C)" << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(60));
+        ++count;
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        myService->fireEvent(count, ::v0::commonapi::examples::HelloWorld::RoutineControlType::START, {0x11*count});
     }
 
     return 0;

@@ -47,7 +47,8 @@ INITIALIZER(registerHelloWorldSomeIPProxy) {
 HelloWorldSomeIPProxy::HelloWorldSomeIPProxy(
     const CommonAPI::SomeIP::Address &_address,
     const std::shared_ptr<CommonAPI::SomeIP::ProxyConnection> &_connection)
-        : CommonAPI::SomeIP::Proxy(_address, _connection)
+        : CommonAPI::SomeIP::Proxy(_address, _connection),
+          onRoutineControl_(*this, 0x8001, CommonAPI::SomeIP::event_id_t(0x8001), CommonAPI::SomeIP::event_type_e::ET_EVENT , CommonAPI::SomeIP::reliability_type_e::RT_UNRELIABLE, false, std::make_tuple(static_cast< CommonAPI::SomeIP::IntegerDeployment<uint16_t>* >(nullptr), static_cast< ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t* >(nullptr), static_cast< CommonAPI::SomeIP::ByteBufferDeployment* >(nullptr)))
 {
 }
 
@@ -55,6 +56,9 @@ HelloWorldSomeIPProxy::~HelloWorldSomeIPProxy() {
 }
 
 
+HelloWorldSomeIPProxy::OnRoutineControlEvent& HelloWorldSomeIPProxy::getOnRoutineControlEvent() {
+    return onRoutineControl_;
+}
 
 void HelloWorldSomeIPProxy::sayHello(std::string _name, CommonAPI::CallStatus &_internalCallStatus, std::string &_message, const CommonAPI::CallInfo *_info) {
     CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment> deploy_name(_name, &::v0::commonapi::examples::HelloWorld_::sayHello_nameDeployment);
@@ -112,6 +116,82 @@ std::future<CommonAPI::CallStatus> HelloWorldSomeIPProxy::sayHelloAsync(const st
                 _callback(_internalCallStatus, _message.getValue());
         },
         std::make_tuple(deploy_message));
+}
+
+void HelloWorldSomeIPProxy::routineResult(uint16_t _Identifier, HelloWorld::RoutineControlType _controlType, uint8_t _responseCode, CommonAPI::ByteBuffer _dataOut, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info) {
+    CommonAPI::Deployable< uint16_t, CommonAPI::SomeIP::IntegerDeployment<uint16_t>> deploy_Identifier(_Identifier, static_cast< CommonAPI::SomeIP::IntegerDeployment<uint16_t>* >(nullptr));
+    CommonAPI::Deployable< HelloWorld::RoutineControlType, ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t> deploy_controlType(_controlType, static_cast< ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t* >(nullptr));
+    CommonAPI::Deployable< uint8_t, CommonAPI::SomeIP::IntegerDeployment<uint8_t>> deploy_responseCode(_responseCode, static_cast< CommonAPI::SomeIP::IntegerDeployment<uint8_t>* >(nullptr));
+    CommonAPI::Deployable< CommonAPI::ByteBuffer, CommonAPI::SomeIP::ByteBufferDeployment> deploy_dataOut(_dataOut, static_cast< CommonAPI::SomeIP::ByteBufferDeployment* >(nullptr));
+    CommonAPI::SomeIP::ProxyHelper<
+        CommonAPI::SomeIP::SerializableArguments<
+            CommonAPI::Deployable<
+                uint16_t,
+                CommonAPI::SomeIP::IntegerDeployment<uint16_t>
+            >,
+            CommonAPI::Deployable<
+                HelloWorld::RoutineControlType,
+                ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t
+            >,
+            CommonAPI::Deployable<
+                uint8_t,
+                CommonAPI::SomeIP::IntegerDeployment<uint8_t>
+            >,
+            CommonAPI::Deployable<
+                CommonAPI::ByteBuffer,
+                CommonAPI::SomeIP::ByteBufferDeployment
+            >
+        >,
+        CommonAPI::SomeIP::SerializableArguments<
+        >
+    >::callMethodWithReply(
+        *this,
+        CommonAPI::SomeIP::method_id_t(0x7531),
+        true,
+        false,
+        (_info ? _info : &CommonAPI::SomeIP::defaultCallInfo),
+        deploy_Identifier, deploy_controlType, deploy_responseCode, deploy_dataOut,
+        _internalCallStatus);
+}
+
+std::future<CommonAPI::CallStatus> HelloWorldSomeIPProxy::routineResultAsync(const uint16_t &_Identifier, const HelloWorld::RoutineControlType &_controlType, const uint8_t &_responseCode, const CommonAPI::ByteBuffer &_dataOut, RoutineResultAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
+    CommonAPI::Deployable< uint16_t, CommonAPI::SomeIP::IntegerDeployment<uint16_t>> deploy_Identifier(_Identifier, static_cast< CommonAPI::SomeIP::IntegerDeployment<uint16_t>* >(nullptr));
+    CommonAPI::Deployable< HelloWorld::RoutineControlType, ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t> deploy_controlType(_controlType, static_cast< ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t* >(nullptr));
+    CommonAPI::Deployable< uint8_t, CommonAPI::SomeIP::IntegerDeployment<uint8_t>> deploy_responseCode(_responseCode, static_cast< CommonAPI::SomeIP::IntegerDeployment<uint8_t>* >(nullptr));
+    CommonAPI::Deployable< CommonAPI::ByteBuffer, CommonAPI::SomeIP::ByteBufferDeployment> deploy_dataOut(_dataOut, static_cast< CommonAPI::SomeIP::ByteBufferDeployment* >(nullptr));
+    return CommonAPI::SomeIP::ProxyHelper<
+        CommonAPI::SomeIP::SerializableArguments<
+            CommonAPI::Deployable<
+                uint16_t,
+                CommonAPI::SomeIP::IntegerDeployment<uint16_t>
+            >,
+            CommonAPI::Deployable<
+                HelloWorld::RoutineControlType,
+                ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t
+            >,
+            CommonAPI::Deployable<
+                uint8_t,
+                CommonAPI::SomeIP::IntegerDeployment<uint8_t>
+            >,
+            CommonAPI::Deployable<
+                CommonAPI::ByteBuffer,
+                CommonAPI::SomeIP::ByteBufferDeployment
+            >
+        >,
+        CommonAPI::SomeIP::SerializableArguments<
+        >
+    >::callMethodAsync(
+        *this,
+        CommonAPI::SomeIP::method_id_t(0x7531),
+        true,
+        false,
+        (_info ? _info : &CommonAPI::SomeIP::defaultCallInfo),
+        deploy_Identifier, deploy_controlType, deploy_responseCode, deploy_dataOut,
+        [_callback] (CommonAPI::CallStatus _internalCallStatus) {
+            if (_callback)
+                _callback(_internalCallStatus);
+        },
+        std::make_tuple());
 }
 
 void HelloWorldSomeIPProxy::getOwnVersion(uint16_t& ownVersionMajor, uint16_t& ownVersionMinor) const {

@@ -18,7 +18,10 @@
 #define HAS_DEFINED_COMMONAPI_INTERNAL_COMPILATION_HERE
 #endif
 
+#include <CommonAPI/InputStream.hpp>
+#include <CommonAPI/OutputStream.hpp>
 #include <CommonAPI/Types.hpp>
+#include <cstdint>
 
 #if defined (HAS_DEFINED_COMMONAPI_INTERNAL_COMPILATION_HERE)
 #undef COMMONAPI_INTERNAL_COMPILATION
@@ -35,6 +38,55 @@ public:
 
     static inline const char* getInterface();
     static inline CommonAPI::Version getInterfaceVersion();
+    
+    struct RoutineControlType : CommonAPI::Enumeration< uint8_t> {
+        enum Literal : uint8_t {
+            START = 1,
+            STOP = 2,
+            RESULT = 3
+        };
+    
+        RoutineControlType()
+            : CommonAPI::Enumeration< uint8_t>(static_cast< uint8_t>(Literal::START)) {}
+        RoutineControlType(Literal _literal)
+            : CommonAPI::Enumeration< uint8_t>(static_cast< uint8_t>(_literal)) {}
+    
+        inline bool validate() const {
+            switch (value_) {
+                case static_cast< uint8_t>(Literal::START):
+                case static_cast< uint8_t>(Literal::STOP):
+                case static_cast< uint8_t>(Literal::RESULT):
+                return true;
+            default:
+                return false;
+            }
+        }
+    
+        inline bool operator==(const RoutineControlType &_other) const { return (value_ == _other.value_); }
+        inline bool operator!=(const RoutineControlType &_other) const { return (value_ != _other.value_); }
+        inline bool operator<=(const RoutineControlType &_other) const { return (value_ <= _other.value_); }
+        inline bool operator>=(const RoutineControlType &_other) const { return (value_ >= _other.value_); }
+        inline bool operator<(const RoutineControlType &_other) const { return (value_ < _other.value_); }
+        inline bool operator>(const RoutineControlType &_other) const { return (value_ > _other.value_); }
+    
+        inline bool operator==(const Literal &_value) const { return (value_ == static_cast< uint8_t>(_value)); }
+        inline bool operator!=(const Literal &_value) const { return (value_ != static_cast< uint8_t>(_value)); }
+        inline bool operator<=(const Literal &_value) const { return (value_ <= static_cast< uint8_t>(_value)); }
+        inline bool operator>=(const Literal &_value) const { return (value_ >= static_cast< uint8_t>(_value)); }
+        inline bool operator<(const Literal &_value) const { return (value_ < static_cast< uint8_t>(_value)); }
+        inline bool operator>(const Literal &_value) const { return (value_ > static_cast< uint8_t>(_value)); }
+    
+        const char* toString() const noexcept
+        {
+            switch(value_)
+            {
+            case static_cast< uint8_t>(Literal::START): return "START";
+            case static_cast< uint8_t>(Literal::STOP): return "STOP";
+            case static_cast< uint8_t>(Literal::RESULT): return "RESULT";
+            default: return "UNDEFINED";
+            }
+        }
+    };
 };
 
 const char* HelloWorld::getInterface() {

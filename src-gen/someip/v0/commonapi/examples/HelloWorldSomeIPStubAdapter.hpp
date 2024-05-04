@@ -48,6 +48,8 @@ public:
         HelloWorldSomeIPStubAdapterHelper::deinit();
     }
 
+    void fireOnRoutineControlEvent(const uint16_t &_Identifier, const ::v0::commonapi::examples::HelloWorld::RoutineControlType &_controlType, const CommonAPI::ByteBuffer &_buffer);
+
     void deactivateManagedInstances() {}
     
     CommonAPI::SomeIP::GetAttributeStubDispatcher<
@@ -62,6 +64,14 @@ public:
         std::tuple< CommonAPI::SomeIP::StringDeployment>,
         std::tuple< CommonAPI::SomeIP::StringDeployment>
     > sayHelloStubDispatcher;
+    
+    CommonAPI::SomeIP::MethodWithReplyStubDispatcher<
+        ::v0::commonapi::examples::HelloWorldStub,
+        std::tuple< uint16_t, HelloWorld::RoutineControlType, uint8_t, CommonAPI::ByteBuffer>,
+        std::tuple< >,
+        std::tuple< CommonAPI::SomeIP::IntegerDeployment<uint16_t>, ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t, CommonAPI::SomeIP::IntegerDeployment<uint8_t>, CommonAPI::SomeIP::ByteBufferDeployment>,
+        std::tuple< >
+    > routineResultStubDispatcher;
     
     HelloWorldSomeIPStubAdapterInternal(
         const CommonAPI::SomeIP::Address &_address,
@@ -80,9 +90,23 @@ public:
             std::make_tuple(&::v0::commonapi::examples::HelloWorld_::sayHello_nameDeployment),
             std::make_tuple(static_cast< CommonAPI::SomeIP::StringDeployment* >(nullptr)))
         
+        ,
+        routineResultStubDispatcher(
+            &HelloWorldStub::routineResult,
+            false,
+            _stub->hasElement(1),
+            std::make_tuple(static_cast< CommonAPI::SomeIP::IntegerDeployment<uint16_t>* >(nullptr), static_cast< ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t* >(nullptr), static_cast< CommonAPI::SomeIP::IntegerDeployment<uint8_t>* >(nullptr), static_cast< CommonAPI::SomeIP::ByteBufferDeployment* >(nullptr)),
+            std::make_tuple())
+        
     {
         HelloWorldSomeIPStubAdapterHelper::addStubDispatcher( { CommonAPI::SomeIP::method_id_t(0x7530) }, &sayHelloStubDispatcher );
+        HelloWorldSomeIPStubAdapterHelper::addStubDispatcher( { CommonAPI::SomeIP::method_id_t(0x7531) }, &routineResultStubDispatcher );
         // Provided events/fields
+        {
+            std::set<CommonAPI::SomeIP::eventgroup_id_t> itsEventGroups;
+            itsEventGroups.insert(CommonAPI::SomeIP::eventgroup_id_t(0x8001));
+            CommonAPI::SomeIP::StubAdapter::registerEvent(CommonAPI::SomeIP::event_id_t(0x8001), itsEventGroups, CommonAPI::SomeIP::event_type_e::ET_EVENT, CommonAPI::SomeIP::reliability_type_e::RT_UNRELIABLE);
+        }
     }
 
     // Register/Unregister event handlers for selective broadcasts
@@ -90,6 +114,25 @@ public:
     void unregisterSelectiveEventHandlers();
 
 };
+
+template <typename _Stub, typename... _Stubs>
+void HelloWorldSomeIPStubAdapterInternal<_Stub, _Stubs...>::fireOnRoutineControlEvent(const uint16_t &_Identifier, const ::v0::commonapi::examples::HelloWorld::RoutineControlType &_controlType, const CommonAPI::ByteBuffer &_buffer) {
+    CommonAPI::Deployable< uint16_t, CommonAPI::SomeIP::IntegerDeployment<uint16_t>> deployed_Identifier(_Identifier, static_cast< CommonAPI::SomeIP::IntegerDeployment<uint16_t>* >(nullptr));
+    CommonAPI::Deployable< HelloWorld::RoutineControlType, ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t> deployed_controlType(_controlType, static_cast< ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t* >(nullptr));
+    CommonAPI::Deployable< CommonAPI::ByteBuffer, CommonAPI::SomeIP::ByteBufferDeployment> deployed_buffer(_buffer, static_cast< CommonAPI::SomeIP::ByteBufferDeployment* >(nullptr));
+    CommonAPI::SomeIP::StubEventHelper<CommonAPI::SomeIP::SerializableArguments<  CommonAPI::Deployable< uint16_t, CommonAPI::SomeIP::IntegerDeployment<uint16_t> > 
+    ,  CommonAPI::Deployable< ::v0::commonapi::examples::HelloWorld::RoutineControlType, ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t > 
+    ,  CommonAPI::Deployable< CommonAPI::ByteBuffer, CommonAPI::SomeIP::ByteBufferDeployment > 
+    >>
+        ::sendEvent(
+            *this,
+            CommonAPI::SomeIP::event_id_t(0x8001),
+            false,
+             deployed_Identifier 
+            ,  deployed_controlType 
+            ,  deployed_buffer 
+    );
+}
 
 
 template <typename _Stub, typename... _Stubs>

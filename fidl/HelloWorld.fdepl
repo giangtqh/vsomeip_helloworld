@@ -14,6 +14,17 @@ define org.genivi.commonapi.someip.deployment for interface commonapi.examples.H
             }
         }
     }
+    method routineResult
+    {
+        SomeIpMethodID = 30001
+        SomeIpReliable = true
+    }
+
+    broadcast onRoutineControl
+    {
+        SomeIpEventID = 32769
+        SomeIpEventGroups = { 32769 }
+    }
 }
 
 define org.genivi.commonapi.someip.deployment for provider as Service {

@@ -23,6 +23,10 @@
 #define HAS_DEFINED_COMMONAPI_INTERNAL_COMPILATION_HERE
 #endif
 
+#include <CommonAPI/InputStream.hpp>
+#include <CommonAPI/OutputStream.hpp>
+#include <cstdint>
+#include <unordered_set>
 #include <vector>
 
 
@@ -47,6 +51,11 @@ class HelloWorldStubAdapter
     : public virtual CommonAPI::StubAdapter,
       public virtual HelloWorld {
  public:
+    /**
+    * Sends a broadcast event for onRoutineControl. Should not be called directly.
+    * Instead, the "fire<broadcastName>Event" methods of the stub should be used.
+    */
+    virtual void fireOnRoutineControlEvent(const uint16_t &_Identifier, const ::v0::commonapi::examples::HelloWorld::RoutineControlType &_controlType, const CommonAPI::ByteBuffer &_buffer) = 0;
 
 
     virtual void deactivateManagedInstances() = 0;
@@ -90,16 +99,25 @@ class HelloWorldStub
 {
 public:
     typedef std::function<void (std::string _message)> sayHelloReply_t;
+    typedef std::function<void ()> routineResultReply_t;
 
     virtual ~HelloWorldStub() {}
     void lockInterfaceVersionAttribute(bool _lockAccess) { static_cast<void>(_lockAccess); }
     bool hasElement(const uint32_t _id) const {
-        return (_id < 1);
+        return (_id < 3);
     }
     virtual const CommonAPI::Version& getInterfaceVersion(std::shared_ptr<CommonAPI::ClientId> _client) = 0;
 
     /// This is the method that will be called on remote calls on the method sayHello.
     virtual void sayHello(const std::shared_ptr<CommonAPI::ClientId> _client, std::string _name, sayHelloReply_t _reply) = 0;
+    /// This is the method that will be called on remote calls on the method routineResult.
+    virtual void routineResult(const std::shared_ptr<CommonAPI::ClientId> _client, uint16_t _Identifier, HelloWorld::RoutineControlType _controlType, uint8_t _responseCode, CommonAPI::ByteBuffer _dataOut, routineResultReply_t _reply) = 0;
+    /// Sends a broadcast event for onRoutineControl.
+    virtual void fireOnRoutineControlEvent(const uint16_t &_Identifier, const ::v0::commonapi::examples::HelloWorld::RoutineControlType &_controlType, const CommonAPI::ByteBuffer &_buffer) {
+        auto stubAdapter = CommonAPI::Stub<HelloWorldStubAdapter, HelloWorldStubRemoteEvent>::stubAdapter_.lock();
+        if (stubAdapter)
+            stubAdapter->fireOnRoutineControlEvent(_Identifier, _controlType, _buffer);
+    }
 
 
     using CommonAPI::Stub<HelloWorldStubAdapter, HelloWorldStubRemoteEvent>::initStubAdapter;

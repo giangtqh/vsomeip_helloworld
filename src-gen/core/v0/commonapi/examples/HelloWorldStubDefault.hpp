@@ -67,6 +67,20 @@ public:
         std::string message = "";
         _reply(message);
     }
+    COMMONAPI_EXPORT virtual void routineResult(const std::shared_ptr<CommonAPI::ClientId> _client, uint16_t _Identifier, HelloWorld::RoutineControlType _controlType, uint8_t _responseCode, CommonAPI::ByteBuffer _dataOut, routineResultReply_t _reply) {
+        (void)_client;
+        (void)_Identifier;
+        (void)_controlType;
+        (void)_responseCode;
+        (void)_dataOut;
+        _reply();
+    }
+    COMMONAPI_EXPORT virtual void fireOnRoutineControlEvent(const uint16_t &_Identifier, const ::v0::commonapi::examples::HelloWorld::RoutineControlType &_controlType, const CommonAPI::ByteBuffer &_buffer) {
+        if (!_controlType.validate()) {
+            return;
+        }
+        HelloWorldStub::fireOnRoutineControlEvent(_Identifier, _controlType, _buffer);
+    }
 
 
 protected:

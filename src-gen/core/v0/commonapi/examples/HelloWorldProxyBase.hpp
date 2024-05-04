@@ -19,8 +19,12 @@
 #define HAS_DEFINED_COMMONAPI_INTERNAL_COMPILATION_HERE
 #endif
 
+#include <CommonAPI/InputStream.hpp>
+#include <CommonAPI/OutputStream.hpp>
+#include <cstdint>
 #include <vector>
 
+#include <CommonAPI/Event.hpp>
 #include <CommonAPI/Proxy.hpp>
 #include <functional>
 #include <future>
@@ -37,11 +41,18 @@ namespace examples {
 class HelloWorldProxyBase
     : virtual public CommonAPI::Proxy {
 public:
+    typedef CommonAPI::Event<
+        uint16_t, ::v0::commonapi::examples::HelloWorld::RoutineControlType, CommonAPI::ByteBuffer
+    > OnRoutineControlEvent;
 
     typedef std::function<void(const CommonAPI::CallStatus&, const std::string&)> SayHelloAsyncCallback;
+    typedef std::function<void(const CommonAPI::CallStatus&)> RoutineResultAsyncCallback;
 
     virtual void sayHello(std::string _name, CommonAPI::CallStatus &_internalCallStatus, std::string &_message, const CommonAPI::CallInfo *_info = nullptr) = 0;
     virtual std::future<CommonAPI::CallStatus> sayHelloAsync(const std::string &_name, SayHelloAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr) = 0;
+    virtual void routineResult(uint16_t _Identifier, HelloWorld::RoutineControlType _controlType, uint8_t _responseCode, CommonAPI::ByteBuffer _dataOut, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info = nullptr) = 0;
+    virtual std::future<CommonAPI::CallStatus> routineResultAsync(const uint16_t &_Identifier, const HelloWorld::RoutineControlType &_controlType, const uint8_t &_responseCode, const CommonAPI::ByteBuffer &_dataOut, RoutineResultAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr) = 0;
+    virtual OnRoutineControlEvent& getOnRoutineControlEvent() = 0;
 
     virtual std::future<void> getCompletionFuture() = 0;
 };

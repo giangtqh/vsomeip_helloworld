@@ -124,6 +124,7 @@ OPTION(USE_INSTALLED_DBUS "Set to OFF to use the local (patched) version of dbus
 message(STATUS "USE_INSTALLED_DBUS is set to value: ${USE_INSTALLED_DBUS}")
 
 include_directories(
+    src
     src/stub
     src-gen/core
     # src-gen/dbus

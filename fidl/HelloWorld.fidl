@@ -11,4 +11,36 @@ interface HelloWorld {
             String message
         }
     }
+    /**
+     * @description: Inform result to the routine control call
+     */
+    method routineResult
+    {
+        in
+        {
+            UInt16 Identifier
+            RoutineControlType controlType
+            UInt8 responseCode
+            ByteBuffer dataOut
+        }
+    }
+
+    /**
+     * @description: Event is fired from VideoEngineeringMenu on menu clicked
+     */
+    broadcast onRoutineControl
+    {
+        out
+        {
+            UInt16 Identifier
+            RoutineControlType controlType
+            ByteBuffer buffer
+        }
+    }
+    enumeration RoutineControlType
+    {
+        START = 1
+        STOP = 2
+        RESULT = 3
+    }
 }

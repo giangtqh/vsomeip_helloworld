@@ -21,6 +21,7 @@
 #include <CommonAPI/SomeIP/Factory.hpp>
 #include <CommonAPI/SomeIP/Proxy.hpp>
 #include <CommonAPI/SomeIP/Types.hpp>
+#include <CommonAPI/SomeIP/Event.hpp>
 
 #if defined (HAS_DEFINED_COMMONAPI_INTERNAL_COMPILATION_HERE)
 #undef COMMONAPI_INTERNAL_COMPILATION
@@ -55,15 +56,22 @@ public:
 
     virtual ~HelloWorldSomeIPProxy();
 
+    virtual OnRoutineControlEvent& getOnRoutineControlEvent();
+
     virtual void sayHello(std::string _name, CommonAPI::CallStatus &_internalCallStatus, std::string &_message, const CommonAPI::CallInfo *_info);
 
     virtual std::future<CommonAPI::CallStatus> sayHelloAsync(const std::string &_name, SayHelloAsyncCallback _callback, const CommonAPI::CallInfo *_info);
+
+    virtual void routineResult(uint16_t _Identifier, HelloWorld::RoutineControlType _controlType, uint8_t _responseCode, CommonAPI::ByteBuffer _dataOut, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info);
+
+    virtual std::future<CommonAPI::CallStatus> routineResultAsync(const uint16_t &_Identifier, const HelloWorld::RoutineControlType &_controlType, const uint8_t &_responseCode, const CommonAPI::ByteBuffer &_dataOut, RoutineResultAsyncCallback _callback, const CommonAPI::CallInfo *_info);
 
     virtual void getOwnVersion(uint16_t &_major, uint16_t &_minor) const;
 
     virtual std::future<void> getCompletionFuture();
 
 private:
+    CommonAPI::SomeIP::Event<OnRoutineControlEvent, CommonAPI::Deployable< uint16_t, CommonAPI::SomeIP::IntegerDeployment<uint16_t> >, CommonAPI::Deployable< ::v0::commonapi::examples::HelloWorld::RoutineControlType, ::v0::commonapi::examples::HelloWorld_::RoutineControlTypeDeployment_t >, CommonAPI::Deployable< CommonAPI::ByteBuffer, CommonAPI::SomeIP::ByteBufferDeployment >> onRoutineControl_;
 
 };
 

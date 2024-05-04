@@ -90,6 +90,32 @@ public:
      * It will provide the same value for CallStatus as will be handed to the callback.
      */
     virtual std::future<CommonAPI::CallStatus> sayHelloAsync(const std::string &_name, SayHelloAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
+    /**
+     * Calls routineResult with synchronous semantics.
+     *
+     * All const parameters are input parameters to this method.
+     * The CallStatus will be filled when the method returns and indicate either
+     * "SUCCESS" or which type of error has occurred. In case of an error, ONLY the CallStatus
+     * will be set.
+     */
+    virtual void routineResult(uint16_t _Identifier, HelloWorld::RoutineControlType _controlType, uint8_t _responseCode, CommonAPI::ByteBuffer _dataOut, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info = nullptr);
+    /**
+     * Calls routineResult with asynchronous semantics.
+     *
+     * The provided callback will be called when the reply to this call arrives or
+     * an error occurs during the call. The CallStatus will indicate either "SUCCESS"
+     * or which type of error has occurred. In case of any error, ONLY the CallStatus
+     * will have a defined value.
+     * The std::future returned by this method will be fulfilled at arrival of the reply.
+     * It will provide the same value for CallStatus as will be handed to the callback.
+     */
+    virtual std::future<CommonAPI::CallStatus> routineResultAsync(const uint16_t &_Identifier, const HelloWorld::RoutineControlType &_controlType, const uint8_t &_responseCode, const CommonAPI::ByteBuffer &_dataOut, RoutineResultAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
+    /**
+     * Returns the wrapper class that provides access to the broadcast onRoutineControl.
+     */
+    virtual OnRoutineControlEvent& getOnRoutineControlEvent() {
+        return delegate_->getOnRoutineControlEvent();
+    }
 
 
 
@@ -121,6 +147,25 @@ void HelloWorldProxy<_AttributeExtensions...>::sayHello(std::string _name, Commo
 template <typename ... _AttributeExtensions>
 std::future<CommonAPI::CallStatus> HelloWorldProxy<_AttributeExtensions...>::sayHelloAsync(const std::string &_name, SayHelloAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
     return delegate_->sayHelloAsync(_name, _callback, _info);
+}
+template <typename ... _AttributeExtensions>
+void HelloWorldProxy<_AttributeExtensions...>::routineResult(uint16_t _Identifier, HelloWorld::RoutineControlType _controlType, uint8_t _responseCode, CommonAPI::ByteBuffer _dataOut, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info) {
+    if (!_controlType.validate()) {
+        _internalCallStatus = CommonAPI::CallStatus::INVALID_VALUE;
+        return;
+    }
+    delegate_->routineResult(_Identifier, _controlType, _responseCode, _dataOut, _internalCallStatus, _info);
+}
+
+template <typename ... _AttributeExtensions>
+std::future<CommonAPI::CallStatus> HelloWorldProxy<_AttributeExtensions...>::routineResultAsync(const uint16_t &_Identifier, const HelloWorld::RoutineControlType &_controlType, const uint8_t &_responseCode, const CommonAPI::ByteBuffer &_dataOut, RoutineResultAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
+    if (!_controlType.validate()) {
+        _callback(CommonAPI::CallStatus::INVALID_VALUE);
+        std::promise<CommonAPI::CallStatus> promise;
+        promise.set_value(CommonAPI::CallStatus::INVALID_VALUE);
+        return promise.get_future();
+    }
+    return delegate_->routineResultAsync(_Identifier, _controlType, _responseCode, _dataOut, _callback, _info);
 }
 
 template <typename ... _AttributeExtensions>

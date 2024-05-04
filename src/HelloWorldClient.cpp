@@ -2,11 +2,11 @@
 #include <iostream>
 #include <string>
 #include <thread>
-
 #ifndef _WIN32
 #include <unistd.h>
 #endif
 
+#include "Utils.hpp"
 #include <CommonAPI/CommonAPI.hpp>
 #include <v0/commonapi/examples/HelloWorldProxy.hpp>
 
@@ -38,15 +38,23 @@ int main() {
     CommonAPI::CallInfo info(1000);
     info.sender_ = 1234;
 
-    while (true) {
-        myProxy->sayHello(name, callStatus, returnMessage, &info);
-        if (callStatus != CommonAPI::CallStatus::SUCCESS) {
-            std::cerr << "Remote call failed!\n";
-            return -1;
-        }
-        info.timeout_ = info.timeout_ + 1000;
+    myProxy->getOnRoutineControlEvent().subscribe([&](const uint16_t& did, const ::v0::commonapi::examples::HelloWorld::RoutineControlType& type, const CommonAPI::ByteBuffer& data) {
+        std::cout << "--> Received onRoutineControlEvent(" << toHexString(did) << ", " << routineControlToString(type) << ", {" << toHexString(data) << "})" << std::endl;
+        CommonAPI::CallStatus status;
+        std::cout << "<-- Report result" << std::endl;
+        myProxy->routineResult(did, type, 0x22, {data[0]*2}, status, nullptr);
+        std::cout << "--> routineResult status: " << (status == CommonAPI::CallStatus::SUCCESS ? "SUCCESS" : "FAILED") << std::endl;
+    });
+    while (true)
+    {
+        // myProxy->sayHello(name, callStatus, returnMessage, &info);
+        // if (callStatus != CommonAPI::CallStatus::SUCCESS) {
+        //     std::cerr << "Remote call failed!\n";
+        //     return -1;
+        // }
+        // info.timeout_ = info.timeout_ + 1000;
 
-        std::cout << "Got message: '" << returnMessage << "'\n";
+        // std::cout << "Got message: '" << returnMessage << "'\n";
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
